@@ -74,22 +74,22 @@
     }
 
     .before-1 {
-      width: 64px;
-      height: 256px;
+      width: 60px;
+      height: 200px;
       background-color: #ffb347;
       border: 2px solid #e69500;
     }
 
     .before-2 {
-      width: 64px;
-      height: 128px;
+      width: 75px;
+      height: 150px;
       background-color: #ffc785;
       border: 2px solid #e6a850;
     }
 
     .before-3 {
-      width: 32px;
-      height: 128px;
+      width: 30px;
+      height: 300px;
       background-color: #ffdfa3;
       border: 2px solid #e6c77d;
     }
@@ -136,6 +136,13 @@
       color: white;
       font-weight: bold;
     }
+
+    .waste-label {
+      font-size: 13px;
+      color: #b00;
+      margin-top: 4px;
+      margin-bottom: 4px;
+    }
   </style>
 </head>
 <body>
@@ -147,10 +154,11 @@
       <div class="title">Before Optimization</div>
       <div class="node-box" id="before-box"></div>
       <div class="label">Drag to reposition. Wasted space due to sizing</div>
+      <div id="before-waste" class="waste-label"></div>
       <div class="controls">
-        <button onclick="addPod('before-box', 'before-1')">Add 64 x 256</button>
-        <button onclick="addPod('before-box', 'before-2')">Add 64 x 128</button>
-        <button onclick="addPod('before-box', 'before-3')">Add 32 x 256</button>
+        <button onclick="addPod('before-box', 'before-1')">Add 60 x 200</button>
+        <button onclick="addPod('before-box', 'before-2')">Add 75 x 150</button>
+        <button onclick="addPod('before-box', 'before-3')">Add 30 x 300</button>
       </div>
     </div>
 
@@ -158,6 +166,7 @@
       <div class="title">After Optimization</div>
       <div class="node-box" id="after-box"></div>
       <div class="label">Tighter pods, better fit. Add more below</div>
+      <div id="after-waste" class="waste-label"></div>
       <div class="controls">
         <button onclick="addPod('after-box', 'after-1')">Add 64 x 256</button>
         <button onclick="addPod('after-box', 'after-2')">Add 64 x 128</button>
@@ -166,7 +175,7 @@
     </div>
   </div>
 
-  <script>
+<script>
     function makeDraggable(el) {
       el.onmousedown = function(e) {
         e.preventDefault();
@@ -193,16 +202,63 @@
       el.ondragstart = () => false;
     }
 
-    function addPod(containerId, podClass) {
-      const container = document.getElementById(containerId);
-      const pod = document.createElement('div');
-      pod.classList.add('pod', podClass);
-      pod.style.left = '0px';
-      pod.style.top = '0px';
-      makeDraggable(pod);
-      container.appendChild(pod);
-    }
-  </script>
+  function updateWastedSpace(containerId) {
+    const container = document.getElementById(containerId);
+    const pods = container.querySelectorAll('.pod');
+    let used = 0;
+    pods.forEach(pod => {
+      used += pod.offsetWidth * pod.offsetHeight;
+    });
+    const total = container.offsetWidth * container.offsetHeight;
+    const wasted = total - used;
+    const labelId = containerId === 'before-box' ? 'before-waste' : 'after-waste';
+    document.getElementById(labelId).textContent =
+      `Wasted space: ${wasted} px² (Used: ${used} / Total: ${total}) = ${((wasted / total) * 100).toFixed(2)}%`;
+  }
 
+  function addPod(containerId, podClass) {
+    const container = document.getElementById(containerId);
+    const pod = document.createElement('div');
+    pod.classList.add('pod', podClass);
+    pod.style.left = '0px';
+    pod.style.top = '0px';
+
+    // Add delete button
+    const deleteBtn = document.createElement('div');
+    deleteBtn.className = 'delete-btn';
+    deleteBtn.innerHTML = '&times;';
+    deleteBtn.onclick = function(e) {
+      e.stopPropagation();
+      pod.remove();
+      updateWastedSpace(containerId);
+    };
+    pod.appendChild(deleteBtn);
+
+    makeDraggable(pod);
+    container.appendChild(pod);
+    updateWastedSpace(containerId);
+  }
+    // Add delete button style
+    const style = document.createElement('style');
+    style.innerHTML = `
+      .delete-btn {
+        position: absolute;
+        top: 2px;
+        right: 4px;
+        color: #fff;
+        background: #e00;
+        border-radius: 50%;
+        width: 16px;
+        height: 16px;
+        font-size: 12px;
+        text-align: center;
+        line-height: 16px;
+        cursor: pointer;
+        z-index: 2;
+        user-select: none;
+      }
+    `;
+    document.head.appendChild(style);
+</script>
 </body>
 </html>
