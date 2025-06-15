@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Kubernetes Right-Sizing Tetris Game</title>
+  <style>
+    :root {
+      --node-size: 400px;
+      --node-width: 256px;
+      --node-height: 512px;
+    }
+
+    body {
+      margin: 0;
+      padding: 40px;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f7fa;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+    }
+
+    h1 {
+      font-size: 28px;
+      color: #333;
+      margin-bottom: 0;
+    }
+
+    .wrapper {
+      display: flex;
+      gap: 60px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .scenario {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .title {
+      font-size: 20px;
+      margin: 10px 0;
+      font-weight: 600;
+      color: #444;
+    }
+
+    .node-box {
+      width: var(--node-width);
+      height: var(--node-height);
+      background: #fff;
+      border: 2px dashed #bbb;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 15px rgba(0,0,0,0.07);
+      border-radius: 12px;
+      background: linear-gradient(135deg, #fefefe, #f0f0f0);
+    }
+
+    .pod {
+      position: absolute;
+      border-radius: 6px;
+      cursor: grab;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .before-1, .before-2, .before-3,
+    .after-1, .after-2, .after-3 {
+      opacity: 1;
+      transform: none;
+      animation: none;
+    }
+
+    .before-1 {
+      width: 64px;
+      height: 256px;
+      background-color: #ffb347;
+      border: 2px solid #e69500;
+    }
+
+    .before-2 {
+      width: 64px;
+      height: 128px;
+      background-color: #ffc785;
+      border: 2px solid #e6a850;
+    }
+
+    .before-3 {
+      width: 32px;
+      height: 128px;
+      background-color: #ffdfa3;
+      border: 2px solid #e6c77d;
+    }
+
+    .after-1 {
+      width: 64px;
+      height: 256px;
+      background-color: #87ceeb;
+      border: 2px solid #1e90ff;
+    }
+
+    .after-2 {
+      width: 64px;
+      height: 128px;
+      background-color: #b0e0e6;
+      border: 2px solid #5fb3b3;
+    }
+
+    .after-3 {
+      width: 32px;
+      height: 128px;
+      background-color: #add8e6;
+      border: 2px solid #6ca7d8;
+    }
+
+    .label {
+      font-size: 14px;
+      margin-top: 6px;
+      color: #666;
+    }
+
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .controls button {
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Kubernetes Pod Right-Fitting Optimization (Tetris Style)</h1>
+
+  <div class="wrapper">
+    <div class="scenario">
+      <div class="title">Before Optimization</div>
+      <div class="node-box" id="before-box"></div>
+      <div class="label">Drag to reposition. Wasted space due to sizing</div>
+      <div class="controls">
+        <button onclick="addPod('before-box', 'before-1')">Add 64 x 256</button>
+        <button onclick="addPod('before-box', 'before-2')">Add 64 x 128</button>
+        <button onclick="addPod('before-box', 'before-3')">Add 32 x 256</button>
+      </div>
+    </div>
+
+    <div class="scenario">
+      <div class="title">After Optimization</div>
+      <div class="node-box" id="after-box"></div>
+      <div class="label">Tighter pods, better fit. Add more below</div>
+      <div class="controls">
+        <button onclick="addPod('after-box', 'after-1')">Add 64 x 256</button>
+        <button onclick="addPod('after-box', 'after-2')">Add 64 x 128</button>
+        <button onclick="addPod('after-box', 'after-3')">Add 32 x 256</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function makeDraggable(el) {
+      el.onmousedown = function(e) {
+        e.preventDefault();
+        let shiftX = e.clientX - el.getBoundingClientRect().left;
+        let shiftY = e.clientY - el.getBoundingClientRect().top;
+
+        function moveAt(pageX, pageY) {
+          el.style.left = pageX - shiftX - el.parentElement.getBoundingClientRect().left + 'px';
+          el.style.top = pageY - shiftY - el.parentElement.getBoundingClientRect().top + 'px';
+        }
+
+        function onMouseMove(e) {
+          moveAt(e.pageX, e.pageY);
+        }
+
+        document.addEventListener('mousemove', onMouseMove);
+
+        el.onmouseup = function() {
+          document.removeEventListener('mousemove', onMouseMove);
+          el.onmouseup = null;
+        };
+      };
+
+      el.ondragstart = () => false;
+    }
+
+    function addPod(containerId, podClass) {
+      const container = document.getElementById(containerId);
+      const pod = document.createElement('div');
+      pod.classList.add('pod', podClass);
+      pod.style.left = '0px';
+      pod.style.top = '0px';
+      makeDraggable(pod);
+      container.appendChild(pod);
+    }
+  </script>
+
+</body>
+</html>
